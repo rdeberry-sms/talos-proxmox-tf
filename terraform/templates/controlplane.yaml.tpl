@@ -83,7 +83,7 @@ cluster:
     cni:
       name: custom
       urls:
-        - https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/canal.yaml
+        - https://raw.githubusercontent.com/rdeberry-sms/talos-proxmox-tf/main/manifests/talos/cilium.yaml
   proxy:
     disabled: true
   etcd:
