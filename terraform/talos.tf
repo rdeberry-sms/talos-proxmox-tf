@@ -83,8 +83,7 @@ locals {
 
 
 data "talos_machine_configuration" "workers" {
-  for_each = var.worker_nodes
-
+  for_each           = var.worker_nodes
   cluster_name       = var.cluster_name
   machine_type       = var.worker_machine_type
   cluster_endpoint   = var.cluster_endpoint

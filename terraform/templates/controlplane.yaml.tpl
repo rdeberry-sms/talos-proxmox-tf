@@ -13,7 +13,6 @@ machine:
     extraArgs:
       rotate-server-certificates: true
     clusterDNS:
-      - 169.254.2.53
       - ${cidrhost(split(",",serviceSubnets)[0], 10)}
   network:
     hostname: "${hostname}"
@@ -23,9 +22,6 @@ machine:
           - ${ipv4_local}/24
         vip:
           ip: ${ipv4_vip}
-      - interface: dummy0
-        addresses:
-          - 169.254.2.53/32
     extraHostEntries:
       - ip: 127.0.0.1
         aliases:
@@ -161,11 +157,13 @@ cluster:
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd-install.yaml
     - https://raw.githubusercontent.com/sergelogvinov/terraform-talos/main/_deployments/vars/talos-cloud-controller-manager-result.yaml
     - https://raw.githubusercontent.com/sergelogvinov/proxmox-cloud-controller-manager/main/docs/deploy/cloud-controller-manager-talos.yml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
-    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.1/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+    - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/0.73.1/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
+    - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
+    - https://github.com/cert-manager/cert-manager/releases/download/v1.14.4/cert-manager.yaml
