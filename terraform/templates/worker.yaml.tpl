@@ -11,6 +11,7 @@ machine:
       rotate-server-certificates: true
       node-labels: "project.io/node-pool=worker"
     clusterDNS:
+      - 169.254.2.53
       - ${cidrhost(split(",",serviceSubnets)[0], 10)}
   network:
     hostname: "${hostname}"
@@ -18,6 +19,9 @@ machine:
       - interface: eth0
         addresses:
           - ${ipv4_local}/24
+      - interface: dummy0
+        addresses:
+          - 169.254.2.53/32
     extraHostEntries:
       - ip: ${ipv4_vip}
         aliases:

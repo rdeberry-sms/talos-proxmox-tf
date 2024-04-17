@@ -17,3 +17,16 @@ resource "null_resource" "kubeconfigapi" {
   }
   depends_on = [null_resource.kubeconfig]
 }
+
+resource "time_sleep" "wait_180_seconds" {
+  depends_on = [null_resource.kubeconfig, null_resource.kubeconfigapi, proxmox_vm_qemu.controlplanes, proxmox_vm_qemu.workers]
+
+  create_duration = "180s"
+}
+
+resource "null_resource" "untaint2" {
+  provisioner "local-exec" {
+    command = "kubectl taint nodes master-1 master-2 master-3 node-role.kubernetes.io/control-plane-"
+  }
+  depends_on = [time_sleep.wait_180_seconds]
+}

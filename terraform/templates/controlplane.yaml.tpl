@@ -13,6 +13,7 @@ machine:
     extraArgs:
       rotate-server-certificates: true
     clusterDNS:
+      - 169.254.2.53
       - ${cidrhost(split(",",serviceSubnets)[0], 10)}
   network:
     hostname: "${hostname}"
@@ -22,6 +23,9 @@ machine:
           - ${ipv4_local}/24
         vip:
           ip: ${ipv4_vip}
+      - interface: dummy0
+        addresses:
+          - 169.254.2.53/32
     extraHostEntries:
       - ip: 127.0.0.1
         aliases:
@@ -70,6 +74,7 @@ machine:
         parameters:
           - nf_conntrack_max=131072
 cluster:
+  allowSchedulingOnControlPlanes: false
   controlPlane:
     endpoint: https://${apiDomain}:6443
   network:
@@ -79,7 +84,8 @@ cluster:
     cni:
       name: custom
       urls:
-        - https://raw.githubusercontent.com/rdeberry-sms/talos-proxmox-tf/main/manifests/talos/cilium.yaml
+        #- https://raw.githubusercontent.com/rdeberry-sms/talos-proxmox-tf/main/manifests/talos/cilium.yaml
+        - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/cilium.yaml
   proxy:
     disabled: true
   etcd:
@@ -97,6 +103,20 @@ cluster:
             app.kubernetes.io/part-of: flux
             pod-security.kubernetes.io/warn: restricted
             pod-security.kubernetes.io/warn-version: latest
+  - name: cilium
+    contents: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+          name: cilium
+          labels:
+            pod-security.kubernetes.io/enforce: "privileged"
+  - name: external-dns
+    contents: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+          name: external-dns
   - name: cert-manager
     contents: |-
       apiVersion: v1
@@ -109,26 +129,6 @@ cluster:
       kind: Namespace
       metadata:
           name: ingress-nginx
-  - name: d8-system
-    contents: |-
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-          name: d8-system
-          labels:
-            pod-security.kubernetes.io/enforce: "privileged"
-  - name: external-dns
-    contents: |-
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-          name: external-dns
-  - name: kasten
-    contents: |-
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-          name: kasten-io
   - name: flux-system-secret
     contents: |-
       apiVersion: v1
@@ -207,13 +207,13 @@ cluster:
   externalCloudProvider:
     enabled: true
     manifests:
-    - https://raw.githubusercontent.com/metallb/metallb/v0.14.4/config/manifests/metallb-native.yaml
-    - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
-    - https://github.com/cert-manager/cert-manager/releases/download/v1.14.4/cert-manager.yaml
+    - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/coredns-local.yaml
+    - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/metallb-native.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/metrics-server.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd-install.yaml
     - https://raw.githubusercontent.com/sergelogvinov/terraform-talos/main/_deployments/vars/talos-cloud-controller-manager-result.yaml
+    - https://raw.githubusercontent.com/sergelogvinov/proxmox-csi-plugin/main/docs/deploy/proxmox-csi-plugin-talos.yml
     - https://raw.githubusercontent.com/sergelogvinov/proxmox-cloud-controller-manager/main/docs/deploy/cloud-controller-manager-talos.yml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
@@ -223,3 +223,5 @@ cluster:
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
+    - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
+    - https://github.com/cert-manager/cert-manager/releases/download/v1.14.4/cert-manager.yaml
