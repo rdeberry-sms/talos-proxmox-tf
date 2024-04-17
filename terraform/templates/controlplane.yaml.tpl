@@ -86,6 +86,17 @@ cluster:
     extraArgs:
       listen-metrics-urls: http://0.0.0.0:2381
   inlineManifests:
+  - name: fluxcd
+    contents: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+          name: flux-system
+          labels:
+            app.kubernetes.io/instance: flux-system
+            app.kubernetes.io/part-of: flux
+            pod-security.kubernetes.io/warn: restricted
+            pod-security.kubernetes.io/warn-version: latest
   - name: cert-manager
     contents: |-
       apiVersion: v1
@@ -98,6 +109,38 @@ cluster:
       kind: Namespace
       metadata:
           name: ingress-nginx
+  - name: d8-system
+    contents: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+          name: d8-system
+          labels:
+            pod-security.kubernetes.io/enforce: "privileged"
+  - name: external-dns
+    contents: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+          name: external-dns
+  - name: kasten
+    contents: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+          name: kasten-io
+  - name: flux-system-secret
+    contents: |-
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        name: github-creds
+        namespace: flux-system
+      data:
+        identity: ${base64encode(identity)}
+        identity.pub: ${base64encode(identitypub)}
+        known_hosts: ${base64encode(knownhosts)}
   - name: proxmox-cloud-controller-manager
     contents: |-
       apiVersion: v1
@@ -148,11 +191,24 @@ cluster:
       spec:
         ipAddressPools:
         - first-pool
+  - name: flux-vars
+    contents: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        namespace: flux-system
+        name: cluster-settings
+      data:
+        CACHE_REGISTRY: ${registry-endpoint}
+        SIDERO_ENDPOINT: ${sidero-endpoint}
+        STORAGE_CLASS: ${storageclass}
+        STORAGE_CLASS_XFS: ${storageclass-xfs}
+        CLUSTER_0_VIP: ${cluster-0-vip}
   externalCloudProvider:
     enabled: true
     manifests:
     - https://raw.githubusercontent.com/metallb/metallb/v0.14.4/config/manifests/metallb-native.yaml
-    - https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/metrics-server.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd-install.yaml
     - https://raw.githubusercontent.com/sergelogvinov/terraform-talos/main/_deployments/vars/talos-cloud-controller-manager-result.yaml
