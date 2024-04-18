@@ -81,6 +81,11 @@ locals {
   first_controlplane_ip = split("/", split("=", proxmox_vm_qemu.controlplanes[local.first_controllpane].ipconfig0)[1])[0]
 }
 
+locals {
+  control_plane_node_names = [for node_key, node_config in var.control_plane_nodes : node_config.name]
+}
+
+
 
 data "talos_machine_configuration" "workers" {
   for_each           = var.worker_nodes

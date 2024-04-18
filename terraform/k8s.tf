@@ -24,9 +24,9 @@ resource "time_sleep" "wait_180_seconds" {
   create_duration = "180s"
 }
 
-resource "null_resource" "untaint2" {
+resource "null_resource" "untaint" {
   provisioner "local-exec" {
-    command = "kubectl taint nodes master-1 master-2 master-3 node-role.kubernetes.io/control-plane-"
+    command = "kubectl taint nodes ${join(" ", local.control_plane_node_names)} node-role.kubernetes.io/control-plane-"
   }
   depends_on = [time_sleep.wait_180_seconds]
 }
