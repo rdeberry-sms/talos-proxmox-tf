@@ -1,31 +1,34 @@
 machine:
   nodeLabels:
-    node.cloudprovider.kubernetes.io/platform: proxmox
-    topology.kubernetes.io/region: ${px_region}
-    topology.kubernetes.io/zone: ${px_node}
+    node.cloudprovider.kubernetes.io/platform: vmware
   certSANs:
     - ${apiDomain}
     - ${ipv4_vip}
-    - ${ipv4_local}
+    - ${ipv4_addr}
   kubelet:
     defaultRuntimeSeccompProfileEnabled: true # Enable container runtime default Seccomp profile.
     disableManifestsDirectory: true # The `disableManifestsDirectory` field configures the kubelet to get static pod manifests from the /etc/kubernetes/manifests directory.
     extraArgs:
       rotate-server-certificates: true
     clusterDNS:
-      - 169.254.2.53
       - ${cidrhost(split(",",serviceSubnets)[0], 10)}
+  install:
+    disk: /dev/sda
+    image: factory.talos.dev/installer/d8b9e545cb5c9b359796f68defe5767696529d05c046306d35901a7807cd12ee:v1.7.1
+    bootloader: true
+    wipe: true
   network:
     hostname: "${hostname}"
     interfaces:
       - interface: eth0
+        dhcp: false
         addresses:
-          - ${ipv4_local}/24
+          - ${ipv4_addr}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${gateway}
         vip:
           ip: ${ipv4_vip}
-      - interface: dummy0
-        addresses:
-          - 169.254.2.53/32
     extraHostEntries:
       - ip: 127.0.0.1
         aliases:
@@ -84,8 +87,8 @@ cluster:
     cni:
       name: custom
       urls:
-        #- https://raw.githubusercontent.com/rdeberry-sms/talos-proxmox-tf/main/manifests/talos/cilium.yaml
-        - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/cilium.yaml
+        - https://raw.githubusercontent.com/rdeberry-sms/talos-proxmox-tf/main/manifests/talos/cilium.yaml
+        #- https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/cilium.yaml
   proxy:
     disabled: true
   etcd:
@@ -141,36 +144,6 @@ cluster:
         identity: ${base64encode(identity)}
         identity.pub: ${base64encode(identitypub)}
         known_hosts: ${base64encode(knownhosts)}
-  - name: proxmox-cloud-controller-manager
-    contents: |-
-      apiVersion: v1
-      kind: Secret
-      type: Opaque
-      metadata:
-        name: proxmox-cloud-controller-manager
-        namespace: kube-system
-      data:
-        config.yaml: ${base64encode(clusters)}
-  - name: proxmox-csi-plugin
-    contents: |-
-      apiVersion: v1
-      kind: Secret
-      type: Opaque
-      metadata:
-        name: proxmox-csi-plugin
-        namespace: csi-proxmox
-      data:
-        config.yaml: ${base64encode(clusters)}
-  - name: proxmox-operator-creds
-    contents: |-
-      apiVersion: v1
-      kind: Secret
-      type: Opaque
-      metadata:
-        name: proxmox-operator-creds
-        namespace: kube-system
-      data:
-        config.yaml: ${base64encode(pxcreds)}
   - name: metallb-addresspool
     contents: |-
       apiVersion: metallb.io/v1beta1
@@ -201,20 +174,17 @@ cluster:
       data:
         CACHE_REGISTRY: ${registry-endpoint}
         SIDERO_ENDPOINT: ${sidero-endpoint}
-        STORAGE_CLASS: ${storageclass}
-        STORAGE_CLASS_XFS: ${storageclass-xfs}
         CLUSTER_0_VIP: ${cluster-0-vip}
   externalCloudProvider:
     enabled: true
     manifests:
-    - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/coredns-local.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/metallb-native.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/metrics-server.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd.yaml
     - https://raw.githubusercontent.com/kubebn/talos-proxmox-kaas/main/manifests/talos/fluxcd-install.yaml
     - https://raw.githubusercontent.com/sergelogvinov/terraform-talos/main/_deployments/vars/talos-cloud-controller-manager-result.yaml
-    - https://raw.githubusercontent.com/sergelogvinov/proxmox-csi-plugin/main/docs/deploy/proxmox-csi-plugin-talos.yml
-    - https://raw.githubusercontent.com/sergelogvinov/proxmox-cloud-controller-manager/main/docs/deploy/cloud-controller-manager-talos.yml
+    #- https://raw.githubusercontent.com/sergelogvinov/proxmox-csi-plugin/main/docs/deploy/proxmox-csi-plugin-talos.yml
+    #- https://raw.githubusercontent.com/sergelogvinov/proxmox-cloud-controller-manager/main/docs/deploy/cloud-controller-manager-talos.yml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
     - https://github.com/prometheus-operator/prometheus-operator/raw/main/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml

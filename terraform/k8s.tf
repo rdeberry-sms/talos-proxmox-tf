@@ -19,14 +19,7 @@ resource "null_resource" "kubeconfigapi" {
 }
 
 resource "time_sleep" "wait_180_seconds" {
-  depends_on = [null_resource.kubeconfig, null_resource.kubeconfigapi, proxmox_vm_qemu.controlplanes, proxmox_vm_qemu.workers]
+  depends_on = [null_resource.kubeconfig, null_resource.kubeconfigapi, vsphere_virtual_machine.nodes]
 
   create_duration = "180s"
-}
-
-resource "null_resource" "untaint" {
-  provisioner "local-exec" {
-    command = "kubectl taint nodes ${join(" ", local.control_plane_node_names)} node-role.kubernetes.io/control-plane-"
-  }
-  depends_on = [time_sleep.wait_180_seconds]
 }

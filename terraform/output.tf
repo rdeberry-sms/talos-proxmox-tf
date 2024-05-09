@@ -1,32 +1,22 @@
-output "talosconfig" {
-  description = "Talos Config"
-  value       = data.talos_client_configuration.cc.talos_config
-  sensitive   = true
-}
+# output "talosconfig" {
+#   description = "Talos Config"
+#   value       = data.talos_client_configuration.cc.talos_config
+#   sensitive   = true
+# }
 
-output "cp" {
-  description = "Control Plane Machine Configuration"
-  value = {
-    for name, mc in data.talos_machine_configuration.cp : name => mc.machine_configuration
-  }
-  sensitive = true
-}
+# output "machine_conf_worker" {
+#   description = "maching config for worker"
+#   value       = data.talos_machine_configuration.workers
+#   sensitive   = true
+# }
 
-output "worker" {
-  description = "Worker Machine Configurations"
-  value = {
-    for name, worker in data.talos_machine_configuration.workers : name => worker.machine_configuration
-  }
-  sensitive = true
-}
+# output "machine_conf_cp" {
+#   description = "maching config for control plane"
+#   value       = data.talos_machine_configuration.cp
+#   sensitive   = true
+# }
 
-
-#output "cp" {
-#  value     = data.talos_machine_configuration.mc.machine_configuration
-#  sensitive = true
-#}
-#
-#output "worker" {
-#  value     = data.talos_machine_configuration.workers.machine_configuration
-#  sensitive = true
-#}
+# output "ips" {
+#   description = "IPs of Nodes"
+#   value       = values(vsphere_virtual_machine.nodes).*.default_ip_address
+# }

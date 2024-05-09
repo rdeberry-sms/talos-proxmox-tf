@@ -6,7 +6,7 @@ variable "kubernetes" {
     podSubnets              = "10.244.0.0/16"
     serviceSubnets          = "10.96.0.0/12"
     domain                  = "cluster.local"
-    apiDomain               = ""
+    apiDomain               = "api.cluster.local"
     ipv4_local              = ""
     ipv4_vip                = ""
     talos-version           = ""
@@ -15,8 +15,6 @@ variable "kubernetes" {
     identity                = ""
     identitypub             = ""
     knownhosts              = ""
-    px_region               = ""
-    px_node                 = ""
     sidero-endpoint         = ""
     storageclass            = ""
     storageclass-xfs        = ""
@@ -24,31 +22,9 @@ variable "kubernetes" {
   }
 }
 
-variable "worker_tags" {
-  description = "Tags for workers"
-  type        = string
-  default     = "kubernetes,worker"
-}
-variable "cp_tags" {
-  description = "Tags for CP"
-  type        = string
-  default     = "kubernetes,cp"
-}
-
 variable "cluster_name" {
   description = "A name to provide for the Talos cluster"
   type        = string
-}
-
-variable "region" {
-  description = "A name to provide for the Talos cluster"
-  type        = string
-}
-
-variable "pool" {
-  description = "A name to provide for the Talos cluster"
-  type        = string
-  default     = ""
 }
 
 variable "cluster_endpoint" {
@@ -63,26 +39,6 @@ variable "talos_version" {
 
 variable "k8s_version" {
   description = "A name to provide for the Talos cluster"
-  type        = string
-}
-
-variable "proxmox_api_url" {
-  description = "Proxmox host"
-  type        = string
-}
-
-variable "storage_name" {
-  description = "Name of Storage Device"
-  type        = string
-}
-
-variable "proxmox_token_id" {
-  description = "Proxmox token id"
-  type        = string
-}
-
-variable "proxmox_token_secret" {
-  description = "Proxmox token secret"
   type        = string
 }
 
@@ -114,138 +70,95 @@ variable "ntpserver" {
   default     = ""
 }
 
-variable "control_plane_nodes" {
-  description = "vm variables in a dictionary "
-  type        = map(any)
-  default = {
-    target_node = ""
-    cores       = ""
-    memory      = ""
-    disk_size   = ""
-    name        = ""
-    ip1_address = ""
-    gw          = ""
-    ip1_netmask = ""
-    sockets     = ""
-    os_type     = ""
-  }
-}
 
-variable "worker_nodes" {
-  description = "vm variables in a dictionary "
-  type        = map(any)
-  default = {
-    target_node = ""
-    cores       = ""
-    memory      = ""
-    disk_size   = ""
-    name        = ""
-    ip1_address = ""
-    gw          = ""
-    ip1_netmask = ""
-    sockets     = ""
-    os_type     = ""
-  }
-}
-
-variable "network_bridge" {
-  description = "Network bridge name"
-  default     = "vmbr0"
+variable "vsphere_datacenter" {
+  description = "The name of the datacenter. This can be a name or path. Can be omitted if there is only one datacenter in the inventory"
   type        = string
 }
 
-variable "primary_vlan" {
-  description = "Primary vlan for primary interface"
+variable "vsphere_folder" {
+  description = "The path to the virtual machine folder in which to place the virtual machine, relative to the datacenter path (/<datacenter-name>/vm). For example, /dc-01/vm/foo"
+  type        = string
+}
+
+variable "vsphere_network" {
+  description = "The name of the network. This can be a name or path"
+  type        = string
+}
+
+variable "vm_linux_disk_name" {
+  description = "Name of Scsi/ssd disk"
+  type        = string
+  default     = "disk0"
+}
+
+variable "vm_second_linux_disk_name" {
+  description = "Name of Scsi/ssd disk"
+  type        = string
+  default     = "disk1"
+}
+
+variable "first_disk_unit_number" {
+  description = "Name of Scsi/ssd disk"
   type        = number
-  default     = null
+  default     = 0
 }
 
-variable "virtual_interface" {
-  description = "What virtual HW for disk"
-  type        = string
-  default     = "virtio"
+variable "second_disk_unit_number" {
+  description = "Name of Scsi/ssd disk"
+  type        = number
+  default     = 1
 }
 
-variable "worker_machine_type" {
-  description = "Worker Machine Type"
-  default     = "worker"
+variable "vm_linux_guest_id" {
+  description = "Name of guest id type"
   type        = string
+  default     = "rhel8_64Guest"
+  validation {
+    condition     = var.vm_linux_guest_id == "rhel8_64Guest" || var.vm_linux_guest_id == "rhel9_64Guest"
+    error_message = "The guest OS type must be either 'rhel8_64Guest' or 'rhel9_64Guest'."
+  }
+}
+
+variable "vsphere_cluster" {
+  description = "The name or absolute path to the cluster"
+  type        = string
+}
+
+variable "vsphere_datastore" {
+  description = "The name of the datastore. This can be a name or path"
+  type        = string
+}
+
+
+
+
+variable "nodes" {
+  description = "Nodes"
+  type        = map(any)
+  default = {
+    name           = "test"
+    ip_address     = "1.1.1.1"
+    netmask        = "32"
+    gateway        = "1.1.1.2"
+    dns_server     = "1.1.1.10"
+    disk_size_0    = 20
+    cpu            = 4
+    memory         = 8192
+    clone_template = "talos"
+    k8s_role       = "cp"
+    guest_id       = "rhel8_64Guest"
+  }
 }
 
 variable "cp_machine_type" {
-  description = "CP Machine Type"
+  type        = string
   default     = "controlplane"
+  description = "CP Machine Type"
+}
+
+variable "worker_machine_type" {
   type        = string
-}
-
-variable "agent" {
-  description = "agent"
-  type        = number
-  default     = "1"
-}
-
-variable "vm_state" {
-  description = "state of the VM"
-  type        = string
-  default     = "running"
-}
-
-variable "os_type" {
-  description = "OS Type"
-  type        = string
-  default     = "cloud-init"
-}
-
-variable "cpu" {
-  description = "Dont Change for host"
-  type        = string
-  default     = "host"
-}
-
-variable "onboot" {
-  description = "OS Type"
-  type        = bool
-  default     = "true"
-}
-
-variable "scsihw" {
-  default     = "virtio-scsi-single"
-  description = "What type of SCSI HW"
-  type        = string
-}
-
-variable "boot_order" {
-  default     = "order=scsi0"
-  description = "What type of SCSI HW"
-  type        = string
-}
-
-variable "random_integer_ceiling_worker" {
-  description = "High vmid"
-  type        = number
-  default     = 8000
-}
-
-variable "random_integer_floor_worker" {
-  description = "Low vmid"
-  type        = number
-  default     = 6000
-}
-
-variable "random_integer_ceiling_master" {
-  description = "High vmid"
-  type        = number
-  default     = 4000
-}
-
-variable "random_integer_floor_master" {
-  description = "Low vmid"
-  type        = number
-  default     = 2000
-}
-
-variable "secondary_vlan" {
-  description = "Secondary vlan for 2nd interface"
-  type        = number
-  default     = 0
+  default     = "worker"
+  description = "Worker Machine Type"
 }
